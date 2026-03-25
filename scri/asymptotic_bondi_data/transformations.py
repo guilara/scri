@@ -332,12 +332,14 @@ def transform(self, **kwargs):
     ψ4 = sf.Grid(self.psi4.evaluate(distorted_grid_rotors), spin_weight=-2)
     # σ(u, θ', ϕ') exp(2iλ)
     σ = sf.Grid(self.sigma.evaluate(distorted_grid_rotors), spin_weight=2)
+    # st_psi
+    st_scalar = sf.Grid(self.st_psi.evaluate(distorted_grid_rotors), spin_weight=0)
 
     ### The following calculations are done using in-place Horner form.  I suspect this will be the
     ### most efficient form of this calculation, within reason.  Note that the factors of exp(isλ)
     ### were computed automatically by evaluating in terms of quaternions.
     #
-    fprime_of_timenaught_directionprime = np.empty((6, self.n_times, n_theta, n_phi), dtype=complex)
+    fprime_of_timenaught_directionprime = np.empty((7, self.n_times, n_theta, n_phi), dtype=complex)
     # ψ0'(u, θ', ϕ')
     fprime_temp = ψ4.copy()
     fprime_temp *= ðuprime_over_k
@@ -383,6 +385,8 @@ def transform(self, **kwargs):
     fprime_temp -= ððα
     fprime_temp *= one_over_k
     fprime_of_timenaught_directionprime[5] = fprime_temp
+    # st_psi
+    fprime_of_timenaught_directionprime[6] = st_scalar.copy()
 
     # Determine the new time slices.  The set timeprime is chosen so that on each slice of constant
     # u'_i, the average value of u=(u'/k)+α is precisely <u>=u'γ+<α>=u_i.  But then, we have to
@@ -396,7 +400,7 @@ def transform(self, **kwargs):
     timeprime = timeprime[(timeprime >= earliest_complete_timeprime) & (timeprime <= latest_complete_timeprime)]
 
     # This will store the values of f'(u', θ', ϕ') for the various functions `f`
-    fprime_of_timeprime_directionprime = np.zeros((6, timeprime.size, n_theta, n_phi), dtype=complex)
+    fprime_of_timeprime_directionprime = np.zeros((7, timeprime.size, n_theta, n_phi), dtype=complex)
 
     # Interpolate the various transformed function values on the transformed grid from the original
     # time coordinate to the new set of time coordinates, independently for each direction.
@@ -427,5 +431,7 @@ def transform(self, **kwargs):
     abdprime.psi4 = spinsfast.map2salm(fprime_of_timeprime_directionprime[4], -2, output_ell_max)
     # σ'(u')_{ℓ', m'}
     abdprime.sigma = spinsfast.map2salm(fprime_of_timeprime_directionprime[5], 2, output_ell_max)
+    # st_scalar'(u')_{ℓ', m'}
+    abdprime.st_psi = spinsfast.map2salm(fprime_of_timeprime_directionprime[6], 0, output_ell_max)
 
     return abdprime

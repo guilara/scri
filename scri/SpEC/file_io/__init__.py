@@ -23,6 +23,7 @@ from ... import (
     psi2,
     psi1,
     psi0,
+    st_psi,
     Inertial,
 )
 import sxs
@@ -442,6 +443,8 @@ def make_variable_dimensionless(WM, ch_mass=1.0):
         unit_scale_factor = 1 / ch_mass
     elif WM.dataType == hdot:
         unit_scale_factor = 1.0
+    elif WM.dataType == st_psi:
+        unit_scale_factor = 1 / ch_mass
     else:
         raise ValueError("DataType not determined.")
 
@@ -537,11 +540,13 @@ def create_abd_from_h5(
             indices = monotonic_indices(time)
             time = time[indices]
             ell_max = int(np.sqrt((cce[f"Strain{data_label_suffix}"].shape[1] - 1) / 2) - 1)
-            for data_label in ["Psi4", "Psi3", "Psi2", "Psi1", "Psi0", "Strain"]:
-                if data_label != "Strain":
-                    dataType = DataNames.index(data_label)
-                else:
+            for data_label in ["Psi4", "Psi3", "Psi2", "Psi1", "Psi0", "Strain", "KleinGordonPsi"]:
+                if data_label == "Strain":
                     dataType = DataNames.index("h")
+                elif data_label == "KleinGordonPsi":
+                    dataType = DataNames.index("st_psi")
+                else:
+                    dataType = DataNames.index(data_label)
                 WMs[data_label] = WaveformModes(
                     t=time.copy(),
                     data=cce[f"{data_label}{data_label_suffix}"][indices, 1:].view(np.complex128),
@@ -655,6 +660,11 @@ def create_abd_from_h5(
             conversion_factor[convention][5] * WMs["Strain"].data
         )
         abd.sigma = abd.sigma.bar
+
+    if "KleinGordonPsi" in WMs:
+        abd.st_psi[:, sf.LM_index(WMs["KleinGordonPsi"].ell_min, -WMs["KleinGordonPsi"].ell_min, 0) :] = (
+            WMs["KleinGordonPsi"].data
+        )
 
     # Interpolate to finer time array, if specified
     if t_interpolate is not None:
