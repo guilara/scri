@@ -217,20 +217,17 @@ def scalar_energy_flux(st_psi):
     """
     from .waveform_modes import WaveformModes
     from . import st_psi as scalar_type
+    from .asymptotic_bondi_data.map_to_superrest_frame import MT_to_WM
 
-    # if not isinstance(st_psi, WaveformModes):
-    #     raise ValueError(
-    #         f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi)}`."
-    #     )
-    # if st_psi.dataType == scalar_type:
-    #     st_psi_dot = st_psi.dot
-    # else:
-    #     raise ValueError(
-    #         f"Input argument has type `{st_psi.data_type_string}`"
-    #     )
-    st_psi_dot = st_psi.dot
+    st_psi_WM = MT_to_WM(st_psi, sxs_version=False, dataType=scalar_type)
+
+    if not isinstance(st_psi_WM, WaveformModes):
+        raise ValueError(
+            f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi_WM)}`."
+        )
+    st_psi_WM_dot = st_psi_WM.data_dot
     # No need to use matrix_expectation_value here
-    Edot = np.einsum("ij, ij -> i", st_psi_dot.conjugate(), st_psi_dot).real
+    Edot = np.einsum("ij, ij -> i", st_psi_WM_dot.conjugate(), st_psi_WM_dot).real
 
     return Edot
 
