@@ -529,7 +529,8 @@ def create_abd_from_h5(
                 if "Spectre" in x:
                     cce_key = x
                     radius = cce_key.split("R")[1][:4]
-                    data_label_suffix = ""
+                    # Remove this suffix from my branch (mistake).
+                    data_label_suffix = ".dat"
                     break
                 else:
                     cce_key = "Cce"
