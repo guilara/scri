@@ -222,13 +222,13 @@ def scalar_energy_flux(st_psi):
     #     raise ValueError(
     #         f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi)}`."
     #     )
-    if st_psi.dataType == scalar_type:
-        st_psi_dot = st_psi.dot
-    else:
-        raise ValueError(
-            f"Input argument has type `{st_psi.data_type_string}`"
-        )
-
+    # if st_psi.dataType == scalar_type:
+    #     st_psi_dot = st_psi.dot
+    # else:
+    #     raise ValueError(
+    #         f"Input argument has type `{st_psi.data_type_string}`"
+    #     )
+    st_psi_dot = st_psi.dot
     # No need to use matrix_expectation_value here
     Edot = np.einsum("ij, ij -> i", st_psi_dot.conjugate(), st_psi_dot).real
 
