@@ -218,11 +218,11 @@ def scalar_energy_flux(st_psi):
     from .waveform_modes import WaveformModes
     from . import st_psi as scalar_type
 
-    if not isinstance(st_psi, WaveformModes):
-        raise ValueError(
-            f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi)}`."
-        )
-    elif st_psi.dataType == scalar_type:
+    # if not isinstance(st_psi, WaveformModes):
+    #     raise ValueError(
+    #         f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi)}`."
+    #     )
+    if st_psi.dataType == scalar_type:
         st_psi_dot = st_psi.dot
     else:
         raise ValueError(
