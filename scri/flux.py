@@ -209,6 +209,31 @@ def energy_flux(h):
 
     return Edot
 
+def scalar_energy_flux(st_psi):
+    """Compute energy flux from waveform
+
+    This implements the analogous of Eq. (2.8) from Ruiz et al. (2008) [0707.4654].
+
+    """
+    from .waveform_modes import WaveformModes
+    from . import st_psi as scalar_type
+
+    if not isinstance(st_psi, WaveformModes):
+        raise ValueError(
+            f"Energy flux can only be calculated from a `WaveformModes` object; this object is of type `{type(st_psi)}`."
+        )
+    elif st_psi.dataType == scalar_type:
+        st_psi_dot = st_psi.dot
+    else:
+        raise ValueError(
+            f"Input argument has type `{st_psi.data_type_string}`"
+        )
+
+    # No need to use matrix_expectation_value here
+    Edot = np.einsum("ij, ij -> i", st_psi_dot.conjugate(), st_psi_dot).real
+
+    return Edot
+
 
 @swsh_indices_to_matrix_indices
 def p_z(ell_min, ell_max, s=-2):
